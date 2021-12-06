@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "wzBjqnsq2lYh4i5mEBJ2jMF0Iqru+Gc1ERzNwZOTkPKyryEb2vpZpZ8WLJ9O5iexbr/ddKfcxbw0Ifh8Au5Dew==",
+  "dgSpecHash": "1YSQwTBUozyHGU/BCDSg5a9YmLOXieL0sKl34qf+x8/NeEm67ViF6wpq7Qw+hUzDUSPeXTTK9ww6IgmvcARGDg==",
   "success": true,
   "projectFilePath": "D:\\Все для учебы\\5 семестр\\Численные методы\\coursework\\Project\\Project.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\artyu\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
+    "C:\\Users\\artyu\\.nuget\\packages\\system.text.encoding.codepages\\6.0.0\\system.text.encoding.codepages.6.0.0.nupkg.sha512"
+  ],
   "logs": []
 }

@@ -6,7 +6,7 @@ namespace Project
     {
         public int N;
         public int[] ig, jg;  
-        public double[] di, ggl, ggu, pr;  
+        public double[] di, gg, pr;  
     }
 
     public static class Helper

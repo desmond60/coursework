@@ -38,7 +38,7 @@ namespace Project
             global();   //? Составление глобальный матрицы
         }
 
-    // ************ Составление портрета ************ //
+        //* Составление портрета
         private void portrait()
         {
             // Составление списка связанностей
@@ -65,7 +65,7 @@ namespace Project
             for (int i = 1; i < countNode; i++)
                 matrix.ig[i + 1] = (matrix.ig[i] + list[i].Length);
 
-            // Заполнение jg
+            // Заполнение jg[]
             matrix.jg = new int[matrix.ig[countNode]];
             int jj = 0;
             for (int i = 0; i < countNode; i++)
@@ -73,10 +73,11 @@ namespace Project
                     matrix.jg[jj] = list[i][j];
 
             // Размерность глобальной матрицы
-            matrix.N = matrix.ig.Length - 1;
+            matrix.N = countNode;
             resize();
         }
 
+        //* Построение глоабльной матрицы
         private void global() 
         {
             // Для каждого конечного элемента
@@ -93,8 +94,8 @@ namespace Project
             // Для каждого условия на границе
             for (int index_kraev_cond = 0; index_kraev_cond < countKrayCond; index_kraev_cond++)
             {
-                int[] curr_kraev = boards[index_kraev_cond]; // Номер краевого условия
-                int[] Node = {curr_kraev[1], curr_kraev[2]};
+                int[] curr_kraev = boards[index_kraev_cond]; // Данные краевого условия
+                int[] Node = {curr_kraev[1], curr_kraev[2]}; // Ребро на котором задано условие
                 if (curr_kraev[3] == 1)
                     First_Kraev(curr_kraev); 
                 else if (curr_kraev[3] == 2) {
@@ -105,7 +106,6 @@ namespace Project
                     (double[][] corr_mat, double[] corr_vec) = Third_Kraev(curr_kraev);
                     EntryMatInGlobalMatrix(corr_mat, Node);
                     EntryVecInGlobalMatrix(corr_vec, Node);
-
                 }
             }
 
@@ -125,12 +125,12 @@ namespace Project
         }
 
         //* Занесение матрицы в глоабальную матрицу
-        private void EntryMatInGlobalMatrix(double[][] local_matrix, int[] index)
+        private void EntryMatInGlobalMatrix(double[][] mat, int[] index)
         {         
-            for (int i = 0, h = 0; i < local_matrix.GetUpperBound(0) + 1; i++)
+            for (int i = 0, h = 0; i < mat.GetUpperBound(0) + 1; i++)
             {
                 int ibeg = index[i];
-                for (int j = i + 1; j < local_matrix.GetUpperBound(0) + 1; j++)
+                for (int j = i + 1; j < mat.GetUpperBound(0) + 1; j++)
                 {
                     int iend = index[j];
                     int temp = ibeg;
@@ -139,10 +139,9 @@ namespace Project
                             
                     h = matrix.ig[temp];
                     while(matrix.jg[h++] - iend < 0); h--;
-                    matrix.ggl[h] += local_matrix[i][j];
-                    matrix.ggu[h] += local_matrix[j][i];
+                    matrix.gg[h] += mat[i][j];
                 }
-                matrix.di[ibeg] += local_matrix[i][i];
+                matrix.di[ibeg] += mat[i][i];
             }                
         }
 
@@ -178,27 +177,25 @@ namespace Project
         //* Построение матрицы массы
         private double[][] build_M(int index_fin_el)
         {
-            double[][] M_matrix = new double[3][];             // Матрица масс
+            double[][] M_matrix = new double[3][];                          // Матрица масс
             for (int i = 0; i < 3; i++) M_matrix[i] = new double[3];
 
-            int area_fin_el = areaFinitEl[index_fin_el];        // Область в которой расположек к.э.
-            double gamma = materials[area_fin_el].gamma;        // Значение гаммы в этой области
+            int area_fin_el = areaFinitEl[index_fin_el];                    // Область в которой расположек к.э.
+            double gamma = materials[area_fin_el].gamma;                    // Значение гаммы в этой области
 
             double value = gamma * Abs(ComputeDet(index_fin_el)) / 24.0;    // Значение матрицы массы 
 
-            for (int i = 0; i < 3; i++)
-                for (int j = 0; j < 3; j++)
-                if (i == j) 
-                    M_matrix[i][j] = 2 * value;
-                else M_matrix[i][j] = value;
-
+            for (int i = 0; i < M_matrix.GetUpperBound(0) + 1; i++)         // Заполнение матрицы масс
+                for (int j = 0; j < M_matrix.GetUpperBound(0) + 1; j++)
+                    M_matrix[i][j] = i == j ? 2*value 
+                                            : value; 
             return M_matrix;
         }
 
         //* Построение матрицы жесткости
         private double[][] build_G(int index_fin_el)
         {
-            double [][] G_matrix = new double[3][];                 // Матрица жесткости
+            double [][] G_matrix = new double[3][];                         // Матрица жесткости
             for (int i = 0; i < 3; i++) G_matrix[i] = new double[3];
 
             double[] Node1 = nodes[finitElements[index_fin_el][0]]; // Координаты 1 узла i - конечного элемента
@@ -208,23 +205,17 @@ namespace Project
             double[] Mid13 = MidPoints(Node1, Node3);
             double[] Mid23 = MidPoints(Node2, Node3);
 
-            int area_fin_el = areaFinitEl[index_fin_el];            // Область в которой расположек к.э.
+            int area_fin_el = areaFinitEl[index_fin_el];                    // Область в которой расположек к.э.
             double lambda = Lambda(Mid12[0], Mid12[1], area_fin_el) + 
                             Lambda(Mid13[0], Mid13[1], area_fin_el) + 
-                            Lambda(Mid23[0], Mid23[1], area_fin_el); // Подсчет ламбда расложения
+                            Lambda(Mid23[0], Mid23[1], area_fin_el);        // Подсчет ламбда расложения
             
             double multip = lambda / (6 * Abs(ComputeDet(index_fin_el)));
             double[,] a = ComputeA(index_fin_el);
 
-            G_matrix[0][0] = multip * (a[0,0]*a[0,0] + a[0,1]*a[0,1]);  
-            G_matrix[0][1] = multip * (a[0,0]*a[1,0] + a[0,1]*a[1,1]);
-            G_matrix[0][2] = multip * (a[0,0]*a[2,0] + a[0,1]*a[2,1]);
-            G_matrix[1][0] = multip * (a[1,0]*a[0,0] + a[1,1]*a[0,1]);
-            G_matrix[1][1] = multip * (a[1,0]*a[1,0] + a[1,1]*a[1,1]);
-            G_matrix[1][2] = multip * (a[1,0]*a[2,0] + a[1,1]*a[2,1]);
-            G_matrix[2][0] = multip * (a[2,0]*a[0,0] + a[2,1]*a[0,1]);
-            G_matrix[2][1] = multip * (a[2,0]*a[1,0] + a[2,1]*a[1,1]);
-            G_matrix[2][2] = multip * (a[2,0]*a[2,0] + a[2,1]*a[2,1]);      
+            for (int i = 0; i < G_matrix.GetUpperBound(0) + 1; i++)         // Заполнение матрицы жесткости
+                for (int j = 0; j < G_matrix.GetUpperBound(0) + 1; j++)
+                    G_matrix[i][j] = multip * (a[i,0]*a[j,0] + a[i,1]*a[j,1]);   
 
             return G_matrix;
         }
@@ -240,33 +231,53 @@ namespace Project
             matrix.pr[kraev[1]] = Func_First_Kraev(nodes[kraev[1]][0], nodes[kraev[1]][1], kraev[4]);
             matrix.pr[kraev[2]] = Func_First_Kraev(nodes[kraev[2]][0], nodes[kraev[2]][1], kraev[4]);
 
-            // Зануляем в строке все стоящие элементы кроме диагонального
-            for (int i = 0; i < matrix.ig[kraev[1] + 1] - matrix.ig[kraev[1]]; i++)
-                matrix.ggl[matrix.ig[kraev[1]] + i] = 0;
-            for (int i = 0; i < matrix.ig[kraev[2] + 1] - matrix.ig[kraev[2]]; i++)
-                matrix.ggl[matrix.ig[kraev[2]] + i] = 0;
+            // Зануляем в строке все стоящие элементы кроме диагонального и сразу делаем симметричной
+            for (int k = 1; k < 3; k++) {
+                
+                // Зануление в нижнем треугольнике
+                for (int i = matrix.ig[kraev[k]]; i < matrix.ig[kraev[k] + 1]; i++) {
+                    matrix.pr[matrix.jg[i]] += -matrix.gg[i] * matrix.pr[kraev[k]];
+                    matrix.gg[i] = 0;
+                }
 
-            for (int i = kraev[1] + 1; i < countNode; i++)
-            {
-                int ibeg = matrix.ig[i];
-                int iend = matrix.ig[i + 1];
-                for (int p = ibeg; p < iend; p++)
-                    if (matrix.jg[p] == kraev[1]) {
-                        matrix.ggu[p] = 0;
+                // Зануление в верхнем треугольнике
+                
+            }
+            
+
+            for (int i =  matrix.ig[kraev[1]]; i < matrix.ig[kraev[1] + 1]; i++) {
+                matrix.pr[matrix.jg[i]] += -matrix.gg[i] * matrix.pr[kraev[1]];
+                matrix.gg[i] = 0;
+            }
+                
+            for (int i = matrix.ig[kraev[2]]; i < matrix.ig[kraev[2] + 1]; i++) {
+                matrix.pr[matrix.jg[i]] += -matrix.gg[i] * matrix.pr[kraev[2]];
+                matrix.gg[i] = 0;
+            }
+
+            for(int i = kraev[1] + 1; i < countNode; i++){
+                int lbeg = matrix.ig[i];
+                int lend = matrix.ig[i + 1];
+                for(int p = lbeg; p < lend; p++)
+                    if(matrix.jg[p] == kraev[1]){
+                        matrix.pr[i] += -matrix.gg[p] * matrix.pr[kraev[1]];
+                        matrix.gg[p] = 0;
                         continue;
                     }
             }
 
-            for (int i = kraev[2] + 1; i < countNode; i++)
-            {
-                int ibeg = matrix.ig[i];
-                int iend = matrix.ig[i + 1];
-                for (int p = ibeg; p < iend; p++)
-                    if (matrix.jg[p] == kraev[2]) {
-                        matrix.ggu[p] = 0;
+            for(int i = kraev[2] + 1; i < countNode; i++) {
+                int lbeg = matrix.ig[i];
+                int lend = matrix.ig[i + 1];
+                for(int p = lbeg; p < lend; p++)
+                    if(matrix.jg[p] == kraev[2]){
+                        matrix.pr[i] += -matrix.gg[p] * matrix.pr[kraev[2]];
+                        matrix.gg[p] = 0;
                         continue;
                     }
             }
+
+                
         }
 
         //* Второе краевое условие
@@ -343,8 +354,7 @@ namespace Project
         {
             matrix.di  = new double[matrix.N];
             matrix.pr  = new double[matrix.N];
-            matrix.ggl = new double[matrix.jg.Length];
-            matrix.ggu = new double[matrix.jg.Length];
+            matrix.gg  = new double[matrix.jg.Length];
         }
 
         //* Записб глобальной матрицы
@@ -352,12 +362,11 @@ namespace Project
         {   
             Directory.CreateDirectory(Path + "matrix");
             File.WriteAllText(Path + "matrix/kuslau.txt", $"{matrix.N}");
-            File.WriteAllText(Path + "matrix/ig.txt",  String.Join(" ", matrix.ig) );
-            File.WriteAllText(Path + "matrix/jg.txt",  String.Join(" ", matrix.jg) );
-            File.WriteAllText(Path + "matrix/di.txt",  String.Join(" ", matrix.di) );
-            File.WriteAllText(Path + "matrix/ggl.txt", String.Join(" ", matrix.ggl));
-            File.WriteAllText(Path + "matrix/ggu.txt", String.Join(" ", matrix.ggu));
-            File.WriteAllText(Path + "matrix/pr.txt",  String.Join(" ", matrix.pr) );   
+            File.WriteAllText(Path + "matrix/ig.txt",  String.Join(" ", matrix.ig));
+            File.WriteAllText(Path + "matrix/jg.txt",  String.Join(" ", matrix.jg));
+            File.WriteAllText(Path + "matrix/di.txt",  String.Join(" ", matrix.di));
+            File.WriteAllText(Path + "matrix/gg.txt", String.Join(" ", matrix.gg));
+            File.WriteAllText(Path + "matrix/pr.txt",  String.Join(" ", matrix.pr));   
         }
 
 

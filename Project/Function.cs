@@ -19,7 +19,7 @@ namespace Project
                 case 2: //? test2
                 return area switch
                 {
-                    0 => 20,
+                    0 => -20,
                     _ => 0,
                 };
             }

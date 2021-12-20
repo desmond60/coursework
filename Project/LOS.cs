@@ -40,7 +40,7 @@ namespace Project
             double alpha, betta, Eps;
             int iter = 0;
 
-            double[] L = Enumerable.Range(0, matrix.N).Select(i => 1.0 / Sqrt(matrix.di[i])).ToArray();
+            double[] L = Enumerable.Range(0, matrix.N).Select(i => 1.0 / matrix.di[i]).ToArray();
 
             double[] multX = matrix.mult(matrix.x);
             for (int i = 0; i < r.Length; i++) {
@@ -60,6 +60,7 @@ namespace Project
                     r[i]        -= alpha * p[i];
                     Lr[i]       = L[i] * r[i];
                 }
+
                 multLr = matrix.mult(Lr);
                 for (int i = 0; i < Lr.Length; i++)
                     multLr[i] = L[i] * multLr[i];

@@ -179,7 +179,8 @@ namespace Project
                 case 5: /// test4-Decomposition
                 return area switch
                 {
-                    0 => x,
+                    0 => 2,
+                    1 => 0,
                     _ => 0,
                 };
             }

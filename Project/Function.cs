@@ -46,8 +46,7 @@ namespace Project
                 {
                     0 => x,
                     _ => 0,
-                };
-                
+                };                
             }
             return 0;
         }
@@ -92,8 +91,7 @@ namespace Project
                 {
                     0 => 2*x - 1,
                     _ => 0,
-                };
-                
+                };           
             }
             return 0;
         }   
